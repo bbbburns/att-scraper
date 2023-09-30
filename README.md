@@ -26,6 +26,7 @@ From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 
 ## Implementation
 
+Import configuration with TOML (because it's what's cool with kids these days)
 Scrape router HTML page (unathenticated) with requests
 Parse HTML and tables with BeautifulSoup (beautifulsoup4)
 Send data to InfluxDB (TBD on JSON vs Line Protocol)

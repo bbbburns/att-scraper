@@ -1,9 +1,12 @@
 [router]
-router_ip = "192.168.1.254"
+ip = "192.168.1.254"
+host = "router"
+region = "us-east"
 
 [influxdb]
-influx_ip = "192.168.1.100"
-influx_port = 8086
-influx_db = "net_example"
-influx_user = ""
-influx_pass = ""
+ip = "192.168.1.11"
+port = 8086
+db = "net_example"
+user = ""
+pass = ""
+measurement = "net"

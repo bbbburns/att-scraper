@@ -13,31 +13,30 @@ json_body = [
     },
     "time": "2023-09-24T00:00:00Z",
     "fields": {
-        "tx_bytes": "X",
-        "tx_pkts": "X",
-        "tx_err": "X",
-        "tx_err_pct": "X",
-        "rx_bytes": "X",
-        "rx_pkts": "X",
-        "rx_err": "X",
-        "rx_err_pct": "X"
+        "tx_bytes": X,
+        "tx_pkts": X,
+        "tx_err": X,
+        "tx_err_pct": X,
+        "rx_bytes": X,
+        "rx_pkts": X,
+        "rx_err": X,
+        "rx_err_pct": X
     }
 }
 ]
 """
+import toml
 import requests
 from bs4 import BeautifulSoup
+import json
 
 sample_dict = {}
-router_ip = ""
-
-# TODO: Read in settings from TOML file
-# Set .gitignore for config.toml
-
+measurement = {}
 
 def create_samples(values, type):
     """ 
-    Handle the case of tx and rx as separate types, but in the same structure.
+    Create samples takes in a single row of values and updates a shared dictionary.
+    Handle the case of tx and rx as separate types, but in the same dict structure.
     """
     var_bytes = type + "_bytes"
     var_pkts = type + "_pkts"
@@ -52,62 +51,103 @@ def create_samples(values, type):
     #print(sample_dict)
 
 
-r = requests.get("http://192.168.1.254/xslt?PAGE=C_1_0")
+def main():
+    # Read in settings from TOML file
+    # Set .gitignore for config.toml. See config-example.toml
 
-# Print the status code. Check this later
-# print(r)
+    config = toml.load("config.toml")
+    # print(config)
 
-# Parsing the HTML
-soup = BeautifulSoup(r.content, "html.parser")
+    router_dict = config["router"]
+    influx_dict = config["influxdb"]
 
-for caption in soup.find_all("caption"):
-    # print(caption.get_text())
-    if caption.get_text() == "IP Traffic":
-        table = caption.find_parent("table")
-        break
+    print(router_dict)
+    print(influx_dict)
 
-if not table:
-    print("We didn't find the table we were looking for!")
+    router_ip = router_dict["ip"]
+    router_host = router_dict["host"]
+    router_region = router_dict["region"]
 
-# print(table)
+    influx_ip = influx_dict["ip"]
+    influx_port = influx_dict["port"]
+    influx_db = influx_dict["db"]
+    influx_user = influx_dict["user"]
+    influx_pass = influx_dict["pass"]
+    influx_measurement = influx_dict["measurement"]
 
-"""
- The dumbest way to do this would be to loop through the first data row 
- and store the fixed indices as the tx values, then loop through the second
- row and store the indices as the rx values.
+    router_bw_url = f"http://" + router_ip + "/xslt?PAGE=C_1_0"
 
- I'd be happier if this did something smart and read the headers and took the
- correct action based on the header name. Oh well.
-"""
+    print(f"Router IP: {router_ip} results in URL: {router_bw_url}")
 
-for row in table.find_all("tr"):
-    columns = row.find_all("td")
-    # The th row is an empty list because it doesn't have tds, so check if columns is present
-    if columns:
-        # print("Printing this column")
-        # print(columns)
-        # print(columns[0].text.strip())
-        # print(columns[1].text.strip())
-        # print(columns[2].text.strip())
-        # print(columns[3].text.strip())
-        # print(columns[4].text.strip())
+    # Make the request
+    r = requests.get(router_bw_url)
 
-        # Make a new list by grabbing the text only and ditching whitespace and markup
-        values = [cell.text.strip() for cell in columns]
+    # Print the status code. Check this later
+    # print(r)
 
-        # Pass along the row type
-        if values[0] == "Transmit":
-            # print("This is the transmit row")
-            create_samples(values, "tx")
-        elif values[0] == "Receive":
-            # print("This is the receive row")
-            create_samples(values, "rx")
+    # Parsing the HTML
+    soup = BeautifulSoup(r.content, "html.parser")
 
-"""
-Now we have a sample_dict that has everything we want. Have to pass this to influxdb
-Probably needs tags and devices names or something like that
-And a destination IP, pass(v 1.8, tokens if newer), cert, and db name?
-"""
+    for caption in soup.find_all("caption"):
+        # print(caption.get_text())
+        if caption.get_text() == "IP Traffic":
+            table = caption.find_parent("table")
+            break
 
-print("Sample Dictionary")
-print(sample_dict)
+    if not table:
+        print("We didn't find the table we were looking for!")
+
+    # print(table)
+
+    """
+    The dumbest way to do this would be to loop through the first data row 
+    and store the fixed indices as the tx values, then loop through the second
+    row and store the indices as the rx values.
+
+    I'd be happier if this did something smart and read the headers and took the
+    correct action based on the header name. Oh well.
+    """
+
+    for row in table.find_all("tr"):
+        columns = row.find_all("td")
+        # The th row is an empty list because it doesn't have tds, so check if columns is present
+        if columns:
+            # print("Printing this column")
+            # print(columns)
+            # print(columns[0].text.strip())
+            # print(columns[1].text.strip())
+            # print(columns[2].text.strip())
+            # print(columns[3].text.strip())
+            # print(columns[4].text.strip())
+
+            # Make a new list by grabbing the text only and ditching whitespace and markup
+            values = [cell.text.strip() for cell in columns]
+
+            # Pass along the row type
+            if values[0] == "Transmit":
+                # print("This is the transmit row")
+                create_samples(values, "tx")
+            elif values[0] == "Receive":
+                # print("This is the receive row")
+                create_samples(values, "rx")
+
+    """
+    Now we have a sample_dict that has everything we want. Have to pass this to influxdb
+    Probably needs tags and devices names or something like that
+    And a destination IP, pass(v 1.8, tokens if newer), cert, and db name?
+    """
+
+    print("Sample Dictionary")
+    print(sample_dict)
+
+    measurement["measurement"] = influx_measurement
+    measurement["tags"] = { "host": router_host, "region": router_region }
+    measurement["fields"] = sample_dict
+
+    # print(measurement)
+    # TODO This should have numbers and not strings for the values
+    print(json.dumps(measurement))
+
+
+if __name__ == "__main__":
+    main()
