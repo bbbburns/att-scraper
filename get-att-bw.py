@@ -1,4 +1,8 @@
 """
+Pull the data in based on some stackoverflow beautifulsoup table examples
+
+Output the data to Influx 1.8 https://github.com/influxdata/influxdb-python
+
 Ideal JSON Data Structure for Measurement
 json_body = [
 {
@@ -25,6 +29,11 @@ import requests
 from bs4 import BeautifulSoup
 
 sample_dict = {}
+router_ip = ""
+
+# TODO: Read in settings from TOML file
+# Set .gitignore for config.toml
+
 
 def create_samples(values, type):
     """ 

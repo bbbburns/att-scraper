@@ -161,3 +161,6 @@ cython_debug/
 
 # CSV lock files from Libre Office
 .~lock*
+
+# The config file that may have secrets in it
+config.toml
