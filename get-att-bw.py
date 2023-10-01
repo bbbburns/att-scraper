@@ -29,6 +29,7 @@ import toml
 import requests
 from bs4 import BeautifulSoup
 import json
+from influxdb import InfluxDBClient
 
 sample_dict = {}
 measurement = {}
@@ -43,12 +44,13 @@ def create_samples(values, type):
     var_err = type + "_err"
     var_pct = type + "_pct"
 
-    sample_dict[var_bytes] = values[1]
-    sample_dict[var_pkts] = values[2]
-    sample_dict[var_err] = values[3]
-    sample_dict[var_pct] = values[4]
-    #print("Sample Dict Progress")
-    #print(sample_dict)
+    # Need to write all the numeric values as int
+    sample_dict[var_bytes] = int(values[1])
+    sample_dict[var_pkts] = int(values[2])
+    sample_dict[var_err] = int(values[3])
+    sample_dict[var_pct] = int(values[4])
+    print("Sample Dict Progress")
+    print(sample_dict)
 
 
 def main():
@@ -144,9 +146,45 @@ def main():
     measurement["tags"] = { "host": router_host, "region": router_region }
     measurement["fields"] = sample_dict
 
-    # print(measurement)
-    # TODO This should have numbers and not strings for the values
-    print(json.dumps(measurement))
+    #fmt_msmt = json.dumps(measurement)
+    print("This is the measurement")
+    print(measurement)
+    # print(json.dumps(measurement))
+
+    """
+    json_body = [
+        {
+            "measurement": "net",
+            "tags": {
+                "host": "router",
+                "region": "livingstone"
+            },
+            "fields": {
+                "tx_bytes": 3713275163,
+                "tx_pkts": 56434892,
+                "tx_err": 0,
+                "tx_pct": 0,
+                "rx_bytes": 4909425,
+                "rx_pkts": 109068990,
+                "rx_err": 0,
+                "rx_pct": 0
+            }
+        }
+    ]
+    """
+
+    body = []
+    body.append(measurement)
+    
+    print("This is the Python body")
+    print(body)
+
+    json_body = json.dumps(body)
+    print("This is the json_body")
+    print(json_body)
+
+    client = InfluxDBClient(influx_ip, influx_port, influx_user, influx_pass, influx_db, ssl=True)
+    client.write_points(json_body)
 
 
 if __name__ == "__main__":
