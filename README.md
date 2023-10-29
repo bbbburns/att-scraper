@@ -6,6 +6,28 @@ Collect the WAN bandwidth metrics for the AT&T U-Verse Pace 5628AC home router.
 
 Publish these metric to an InfluxDB time series database.
 
+Graph these metrics with Grafana to see how much bandwidth you're using on
+average.
+
+## Usage
+
+1. Clone this repo into some directory on some server
+2. Install the python requirements from requirements.txt
+3. Copy example-config.toml to config.toml
+4. Configure config.toml with your ATT and InfluxDB values
+5. Configure cron to call get-att-bw.py every 5 minutes
+
+## Recommended Cron Configuration
+
+Cron needs absolute paths for things and I've referred to the config file with
+a relative path. You can fix this with a `cd`. The following executes every 5
+minutes and writes data to some temp file.
+
+```crontab
+*/5 * * * * cd /your/dir && python3 /your/dir/att-scraper/get-att-bw.py >>
+/tmp/att-scraper.log
+```
+
 ## Metrics Collected
 
 From: `http://192.168.1.254/xslt?PAGE=C_1_0`
@@ -21,20 +43,52 @@ From: `http://192.168.1.254/xslt?PAGE=C_1_0`
 
 From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 
-9. NAT Connection Count
-10. NAT Connection % Used
+9. NAT Connection Count (FUTURE)
+10. NAT Connection % Used (FUTURE)
 
 ## Implementation
 
+Automate script run with cron
 Import configuration with TOML (because it's what's cool with kids these days)
 Scrape router HTML page (unathenticated) with requests
 Parse HTML and tables with BeautifulSoup (beautifulsoup4)
-Send data to InfluxDB (TBD on JSON vs Line Protocol)
+Send data to InfluxDB 1.8 (Line Protocol because I'm too dumb to make JSON work)
+Graph results with Grafana
 
 ## Configurable Parameters
 
 - Router IP
 - InfluxDB IP
+- InfluxDB Port (default 8086)
 - InfluxDB Password
-- InfluxDB Certificate
-  - Or just bypass cert checks?
+- InfluxDB Database
+- InfluxDB Measurement Name (suggest net)
+- InfluxDB Host Tag
+- InfluxDB Region Tag (name of your house or location)
+
+## Limitations
+- Does not support modern InfluxDB versions
+    - Uses InfluxDB 1.8 client and tested on 1.8 database
+- Only tested on Linux systems
+- Zero error handling
+
+## Example Grafana Queries
+
+RX Bits Per Second
+```
+SELECT non_negative_derivative(mean("rx_bytes"), 1s) *8 FROM "net" WHERE ("host"::tag = 'router') AND $timeFilter GROUP BY time($__interval) fill(null)
+```
+
+TX Bits Per Second
+```
+SELECT non_negative_derivative(mean("tx_bytes"), 1s) *8 FROM "net" WHERE ("host"::tag = 'router') AND $timeFilter GROUP BY time($__interval) fill(null)
+```
+
+Will these queries handle counter wrapping? I don't know. They have
+"non-negative derivative" and that's my attempt to deal with that. I don't know
+what the math does when the counter wraps around.
+
+I've found it's helpful to also graph the packets per second as an indicator
+that you might have had a byte counter wrap. It's trivial in grafana to modify
+the above to tx and rx_pkts and stop multiplying by 8, since you don't need to
+convert from bytes to bits when you're counting packets.
