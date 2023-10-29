@@ -24,6 +24,12 @@ json_body = [
     }
 }
 ]
+
+Ideal line protocol for measurement. Line breaks added for clarity.
+
+net,host=router,region=livingstone tx_bytes=3713275163,tx_pkts=56434892,
+                                   tx_err=0,tx_pct=0,rx_bytes=4909425,
+                                   rx_pkts109068990,rx_err=0,rx_pct=0
 """
 import toml
 import requests
@@ -77,7 +83,7 @@ def main():
     influx_pass = influx_dict["pass"]
     influx_measurement = influx_dict["measurement"]
 
-    router_bw_url = f"http://" + router_ip + "/xslt?PAGE=C_1_0"
+    router_bw_url = "http://" + router_ip + "/xslt?PAGE=C_1_0"
 
     print(f"Router IP: {router_ip} results in URL: {router_bw_url}")
 
@@ -173,18 +179,48 @@ def main():
     ]
     """
 
-    body = []
-    body.append(measurement)
+    #body = []
+    #body.append(measurement)
     
-    print("This is the Python body")
-    print(body)
+    #print("This is the Python body")
+    #print(body)
 
-    json_body = json.dumps(body)
-    print("This is the json_body")
-    print(json_body)
+    #json_body = json.dumps(body)
+    #print("This is the json_body")
+    #print(json_body)
+
+
+    # Now build line protocol.
+    # I don't like this at all.
+
+    line_body = measurement["measurement"] + \
+                ",host=" + measurement["tags"]["host"] + \
+                ",region=" + measurement["tags"]["region"] + \
+                " " + \
+                "tx_bytes=" + str(measurement["fields"]["tx_bytes"]) + \
+                ",tx_pkts=" + str(measurement["fields"]["tx_pkts"]) + \
+                ",tx_err=" + str(measurement["fields"]["tx_err"]) + \
+                ",tx_pct=" + str(measurement["fields"]["tx_pct"]) + \
+                ",rx_bytes=" + str(measurement["fields"]["rx_bytes"]) + \
+                ",rx_pkts=" + str(measurement["fields"]["rx_pkts"]) + \
+                ",rx_err=" + str(measurement["fields"]["rx_err"]) + \
+                ",rx_pct=" + str(measurement["fields"]["rx_pct"])
+
+    print("This is the line format version.")
+    print(line_body)
+    #body.append(line_body)
+    #print("This is the full body, an array of one.")
+    #print(body)
 
     client = InfluxDBClient(influx_ip, influx_port, influx_user, influx_pass, influx_db, ssl=True)
-    client.write_points(json_body)
+
+    # This always fails because it can't convert my json body for some reason.
+    # I don't see ANY difference between my json body built by hand vs the one
+    # in code.
+    # Maybe it's some unicode or encoding problem?
+    # client.write_points(json_body)
+
+    client.write_points(line_body, protocol="line")
 
 
 if __name__ == "__main__":
