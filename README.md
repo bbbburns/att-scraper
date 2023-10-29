@@ -50,12 +50,12 @@ From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 
 ## Implementation
 
-Automate script run with cron
-Import configuration with TOML (because it's what's cool with kids these days)
-Scrape router HTML page (unathenticated) with requests
-Parse HTML and tables with BeautifulSoup (beautifulsoup4)
-Send data to InfluxDB 1.8 (Line Protocol because I'm too dumb to make JSON work)
-Graph results with Grafana
+- Automate script run with cron
+- Import configuration with TOML (because it's what's cool with kids these days)
+- Scrape router HTML page (unathenticated) with requests
+- Parse HTML and tables with BeautifulSoup (beautifulsoup4)
+- Send data to InfluxDB 1.8 (Line Protocol because I'm too dumb to make JSON work)
+- Graph results with Grafana
 
 ## Configurable Parameters
 
