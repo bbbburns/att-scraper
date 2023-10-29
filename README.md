@@ -1,4 +1,4 @@
-# AT&T Arris Router Bandwidth Scraper
+# AT&T U-Verse Router Bandwidth Scraper
 
 ## Purpose
 

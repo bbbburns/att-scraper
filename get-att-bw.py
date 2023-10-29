@@ -55,8 +55,8 @@ def create_samples(values, type):
     sample_dict[var_pkts] = int(values[2])
     sample_dict[var_err] = int(values[3])
     sample_dict[var_pct] = int(values[4])
-    print("Sample Dict Progress")
-    print(sample_dict)
+    # print("Sample Dict Progress")
+    # print(sample_dict)
 
 
 def main():
@@ -69,8 +69,8 @@ def main():
     router_dict = config["router"]
     influx_dict = config["influxdb"]
 
-    print(router_dict)
-    print(influx_dict)
+    # print(router_dict)
+    # print(influx_dict)
 
     router_ip = router_dict["ip"]
     router_host = router_dict["host"]
@@ -85,7 +85,7 @@ def main():
 
     router_bw_url = "http://" + router_ip + "/xslt?PAGE=C_1_0"
 
-    print(f"Router IP: {router_ip} results in URL: {router_bw_url}")
+    # print(f"Router IP: {router_ip} results in URL: {router_bw_url}")
 
     # Make the request
     r = requests.get(router_bw_url)
@@ -145,16 +145,16 @@ def main():
     And a destination IP, pass(v 1.8, tokens if newer), cert, and db name?
     """
 
-    print("Sample Dictionary")
-    print(sample_dict)
+    # print("Sample Dictionary")
+    # print(sample_dict)
 
     measurement["measurement"] = influx_measurement
     measurement["tags"] = { "host": router_host, "region": router_region }
     measurement["fields"] = sample_dict
 
     #fmt_msmt = json.dumps(measurement)
-    print("This is the measurement")
-    print(measurement)
+    # print("This is the measurement")
+    # print(measurement)
     # print(json.dumps(measurement))
 
     """
@@ -206,8 +206,8 @@ def main():
                 ",rx_err=" + str(measurement["fields"]["rx_err"]) + \
                 ",rx_pct=" + str(measurement["fields"]["rx_pct"])
 
-    print("This is the line format version.")
-    print(line_body)
+    # print("This is the line format version.")
+    # print(line_body)
     #body.append(line_body)
     #print("This is the full body, an array of one.")
     #print(body)
@@ -220,6 +220,7 @@ def main():
     # Maybe it's some unicode or encoding problem?
     # client.write_points(json_body)
 
+    # Let's write line protocol instead.
     client.write_points(line_body, protocol="line")
 
 
