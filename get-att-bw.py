@@ -36,6 +36,8 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from influxdb import InfluxDBClient
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 sample_dict = {}
 measurement = {}
