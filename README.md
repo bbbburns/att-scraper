@@ -9,12 +9,14 @@ Publish these metric to an InfluxDB time series database.
 Graph these metrics with Grafana to see how much bandwidth you're using on
 average.
 
+![Grafana Screenshot](att-scraper-grafana-screenshot.png)
+
 ## Usage
 
 1. Clone this repo into some directory on some server
 2. Install the python requirements from requirements.txt
 3. Copy example-config.toml to config.toml
-4. Configure config.toml with your ATT and InfluxDB values
+4. Configure config.toml with your AT&T router and InfluxDB values
 5. Configure cron to call get-att-bw.py every 5 minutes
 
 ## Recommended Cron Configuration
