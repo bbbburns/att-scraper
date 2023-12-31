@@ -4,7 +4,7 @@
 
 Collect the WAN bandwidth metrics for the AT&T U-Verse Pace 5628AC home router.
 
-Publish these metric to an InfluxDB time series database.
+Publish these metric to an InfluxDB V2 time series database.
 
 Graph these metrics with Grafana to see how much bandwidth you're using on
 average.
@@ -69,8 +69,9 @@ From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 - InfluxDB Region Tag (name of your house or location)
 
 ## Limitations
-- Does not support modern InfluxDB versions
-    - Uses InfluxDB 1.8 client and tested on 1.8 database
+- ~Does not support modern InfluxDB versions~
+    - ~Uses InfluxDB 1.8 client and tested on 1.8 database~
+    - UPDATE 2023-12-31 - FIXED - Tested with Influx2 client and InfluxDB 2.4.7
 - Only tested on Linux systems
 - Zero error handling
 
