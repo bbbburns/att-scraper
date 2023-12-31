@@ -3,10 +3,10 @@ ip = "192.168.1.254"
 host = "router"
 region = "us-east"
 
-[influxdb]
-ip = "192.168.1.11"
-port = 8086
-db = "net_example"
-user = ""
-pass = ""
+[influx2]
+url = "https://192.168.1.X:8086"
+org = "your-org"
+token = "your-token"
+verify_ssl = false
+bucket = "your-bucket"
 measurement = "net"
