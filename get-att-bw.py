@@ -35,7 +35,8 @@ import toml
 import requests
 from bs4 import BeautifulSoup
 import json
-from influxdb import InfluxDBClient
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.write_api import SYNCHRONOUS
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -132,12 +133,8 @@ def main():
     router_host = config["router"]["host"]
     router_region = config["router"]["region"]
 
-    influx_ip = config["influxdb"]["ip"]
-    influx_port = config["influxdb"]["port"]
-    influx_db = config["influxdb"]["db"]
-    influx_user = config["influxdb"]["user"]
-    influx_pass = config["influxdb"]["pass"]
-    influx_measurement = config["influxdb"]["measurement"]
+    influx_bucket = config["influx2"]["bucket"]
+    influx_measurement = config["influx2"]["measurement"]
 
     router_bw_url = "http://" + router_ip + "/xslt?PAGE=C_1_0"
 
@@ -178,18 +175,6 @@ def main():
                 ",region=" + measurement["tags"]["region"] + \
                 " "
                 
-    """ Shouldn't need this junk anymore with append_fields. Attempting DRY
-                + \
-                "tx_bytes=" + str(measurement["fields"]["tx_bytes"]) + \
-                ",tx_pkts=" + str(measurement["fields"]["tx_pkts"]) + \
-                ",tx_err=" + str(measurement["fields"]["tx_err"]) + \
-                ",tx_pct=" + str(measurement["fields"]["tx_pct"]) + \
-                ",rx_bytes=" + str(measurement["fields"]["rx_bytes"]) + \
-                ",rx_pkts=" + str(measurement["fields"]["rx_pkts"]) + \
-                ",rx_err=" + str(measurement["fields"]["rx_err"]) + \
-                ",rx_pct=" + str(measurement["fields"]["rx_pct"])
-    """
-
     # print("This is the first half of line format version.")
     # print(line_body)
 
@@ -197,10 +182,21 @@ def main():
     line_body = append_fields(line_body, sample_dict)
     # print(line_body)
 
-    client = InfluxDBClient(influx_ip, influx_port, influx_user, influx_pass, influx_db, ssl=True, timeout=1, retries=3)
+    # 1.8 client
+    # client = InfluxDBClient(influx_ip, influx_port, influx_user, influx_pass, influx_db, ssl=True, timeout=1, retries=3)
 
+    # 1.8 client
     # Let's write line protocol instead.
-    client.write_points(line_body, protocol="line")
+    # client.write_points(line_body, protocol="line")
+
+    # setup urllib retries
+    #retries = urllib3.Retry(connect=3, read=2, redirect=3)
+    # how do I make that work with from_config_file?
+
+    # 2.0 client from example
+    with InfluxDBClient.from_config_file("config.toml") as client:
+        with client.write_api(write_options=SYNCHRONOUS) as writer:
+            writer.write(bucket=influx_bucket, record=line_body)
 
 
 if __name__ == "__main__":
