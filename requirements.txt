@@ -1,4 +1,7 @@
 requests
 beautifulsoup4
 toml
-influxdb-client
+influxdb_client
+time
+sys
+urllib3

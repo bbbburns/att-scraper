@@ -43,10 +43,13 @@ From: `http://192.168.1.254/xslt?PAGE=C_1_0`
 7. RX Packet Error Count
 8. RX Packet Error %
 
+9. Time taken to complete request to router (total_time)
+10. Python response.elapsed time (elapsed_time)
+
 From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 
-9. NAT Connection Count (FUTURE)
-10. NAT Connection % Used (FUTURE)
+10. NAT Connection Count (FUTURE)
+11. NAT Connection % Used (FUTURE)
 
 ## Implementation
 
@@ -54,7 +57,7 @@ From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 - Import configuration with TOML (because it's what's cool with kids these days)
 - Scrape router HTML page (unathenticated) with requests
 - Parse HTML and tables with BeautifulSoup (beautifulsoup4)
-- Send data to InfluxDB 1.8 (Line Protocol because I'm too dumb to make JSON work)
+- Send data to InfluxDB 2 (Line Protocol because I'm too dumb to make JSON work)
 - Graph results with Grafana
 
 ## Configurable Parameters
@@ -62,8 +65,9 @@ From: `http://192.168.1.254/xslt?PAGE=C_5_5`
 - Router IP
 - InfluxDB IP
 - InfluxDB Port (default 8086)
-- InfluxDB Password
-- InfluxDB Database
+- InfluxDB Token
+- InfluxDB Bucket
+- InfluxDB Org
 - InfluxDB Measurement Name (suggest net)
 - InfluxDB Host Tag
 - InfluxDB Region Tag (name of your house or location)
@@ -73,7 +77,7 @@ From: `http://192.168.1.254/xslt?PAGE=C_5_5`
     - ~Uses InfluxDB 1.8 client and tested on 1.8 database~
     - UPDATE 2023-12-31 - FIXED - Tested with Influx2 client and InfluxDB 2.4.7
 - Only tested on Linux systems
-- Zero error handling
+- Close to zero error handling
 
 ## Example Grafana Queries
 

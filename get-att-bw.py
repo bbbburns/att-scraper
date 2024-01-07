@@ -15,7 +15,6 @@ import requests
 import time
 import sys
 from bs4 import BeautifulSoup
-import json
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
 import urllib3
